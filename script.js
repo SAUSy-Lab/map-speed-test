@@ -19,7 +19,6 @@ var $c = [];
 function start(){
 	$d = document;
 	$b = $d.getElementsByTagName('body')[0];
-	defineIcons();
 	makeTheMap();
 }
 
