@@ -3,4 +3,4 @@ This web app is a touchscreen test for visual/cognitive routfinding speed and/or
 
 The idea is that a good map, for the purposes of finding a shortest/best/lowest-cost path between two points on a network, should result in quicker and more accurate responses on average. This project is being developed to test ways of rendering OpenStreetMap data, but the concept and software could be extended at least in theory to other applications including schematic maps and applications where the user is trying to minimize a general (non-distance) cost function.
 
-Depends on Leaflet, OSRM.
+Depends on Leaflet, OSRM. Leaflet should be placed in the same directory in a folder called 'leaflet'. OSRM should be running on a server that can be accessed by HTTP, with the appropriate profiles and OSM data.
