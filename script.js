@@ -1,19 +1,19 @@
+// this script is currently in a very primitive state
+// it can map-match a trace more or less, but I need 
+// to start storing data somewhere
+
+
+
 // variables prefixed with $ are global
 // all others are local to their functions, or should be
 
-// abreviated document elements
+// abreviated document elements that may be used a lot
 var $d; // document
 var $b; // body element
-// global map layers
 var $m; // map object
 // coordinate string
 var $c = [];
 
-// Graphic SETTINGS
-// icon definitions for selected and unselected stops
-// easiest just to define them once and reference
-var $redIcon;
-var $blueIcon;
 
 // initialize onload by getting some global elements, then pass the ball off
 function start(){
@@ -25,7 +25,7 @@ function start(){
 
 // creates the map
 function makeTheMap(){
-	// leaflet: start map
+	// leaflet: start map at a random location
 	$m = L.map('map',{
 		'center': randomCenter(),
 		'zoom': 16,
@@ -39,8 +39,9 @@ function makeTheMap(){
 	$m.doubleClickZoom.disable();
 	$m.scrollWheelZoom.disable();
 	$m.keyboard.disable();
-	// OSM tiles for now
-	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo($m);
+	// use OSM tiles for now
+	L.tileLayer($tilesource).addTo($m);
+	// add n event listener for clicks
 	$m.on('click',trackCursor)
 }
 
@@ -64,22 +65,11 @@ function closeTrack(){
 
 // append this event's coordinate object to the list
 function addCoordinate(event){
+	// right now the sampling rate is too high
+	// so I am artificially lowering it by sampling
 	if(Math.random() > 0.9){
 		$c.push(event.latlng)
 	}
-}
-
-// select a random center point inside some constraints
-function randomCenter(){
-	latmax = 39.27
-	latmin = 39.0269
-	lonmax = -84.3716
-	lonmin = -84.6874
-	lonrange = lonmax - lonmin
-	latrange = latmax - latmin
-	lat = latmin + Math.random() * latrange / 1;
-	lon = lonmin + Math.random() * lonrange / 1;
-	return [lat,lon];
 }
 
 // send the coordinates to be matched on the cloud
@@ -92,7 +82,7 @@ function mapMatch(coords){
 		radii.push(30);
 	}
 	var r = new XMLHttpRequest();
-	URL = 'http://206.167.182.17:5000/match/v1/transit/';
+	URL = $OSRMserver + '/match/v1/transit/';
 	URL += c.join(';');
 	URL += '?geometries=geojson&overview=full';
 	URL += '&radiuses='+radii.join(';');
@@ -111,7 +101,6 @@ function mapMatch(coords){
 }
 
 
-
 // project and unproject points. mask for overly long names
 // lat-lon to pixel
 function lToP(latLngObject){
@@ -120,18 +109,6 @@ function lToP(latLngObject){
 // pixel to lat-lon
 function pToL(point){
 	return $m.containerPointToLatLng(point);
-}
-
-// define two global icons
-function defineIcons(){
-	$blueIcon = L.icon({
-		'iconUrl':'markers/blue-marker.svg',
-		'iconAnchor':[20,35]
-	});
-	$redIcon = L.icon({
-		'iconUrl':'markers/red-marker.svg',
-		'iconAnchor':[20,35]
-	});
 }
 
 // calculate euclidean distance from two perpendicular lengths
