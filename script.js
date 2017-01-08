@@ -17,6 +17,10 @@ var $c = [];
 var $cursorLocation;
 var $cursorTimer;
 
+// A -> B lat,lon points and the average of the two
+var $A = [];
+var $B = [];
+var $mapCenter = [];
 
 // initialize onload by getting some global elements, then pass the ball off
 function start(){
@@ -27,9 +31,15 @@ function start(){
 
 // creates the map
 function makeTheMap(){
+	// select a random point set
+	var i = Math.floor(Math.random() * $pointSets.length);
+	$A = [$pointSets[i][0],$pointSets[i][1]];
+	$B = [$pointSets[i][2],$pointSets[i][3]];
+	// just the average of the two for now
+	$mapCenter = [ ($A[0]+$B[0])/2, ($A[1]+$B[1])/2 ];
 	// leaflet: start map at a random location
 	$m = L.map('map',{
-		'center': randomCenter(),
+		'center': $mapCenter,
 		'zoom': 16,
 		'zoomControl': false,
 		'attributionControl':false,
@@ -43,6 +53,9 @@ function makeTheMap(){
 	$m.keyboard.disable();
 	// use OSM tiles for now
 	L.tileLayer($tilesource).addTo($m);
+	// create and then add A and B
+	L.marker($A,{icon:$Aicon}).addTo($m);
+	L.marker($B,{icon:$Bicon}).addTo($m);
 	// add n event listener for clicks
 	$m.on('click',trackCursor)
 	// monitor cursor position
