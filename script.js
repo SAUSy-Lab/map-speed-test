@@ -54,7 +54,7 @@ function trackCursor(event){
 	// stop listening for clicks
 	$m.off('click',trackCursor);
 	// start sampling cursor locations
-	$cursorTimer = setInterval(addCoordinate,100);
+	$cursorTimer = setInterval(addCoordinate,$samplingRate);
 	// listen for clicks in a different way
 	$m.on('click',closeTrack);
 }

@@ -7,6 +7,9 @@ $tilesource = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 // this should probably be your own server
 $OSRMserver = 'http://206.167.182.17:5000'
 
+// cursor location sampling rate in milliseconds
+$samplingRate = 100
+
 // select a random center point for the map
 // user-defined function. Should return 
 // latitude,longitude values
