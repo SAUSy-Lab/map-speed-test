@@ -13,6 +13,9 @@ var $b; // body element
 var $m; // map object
 // coordinate string
 var $c = [];
+// constantly updated current lat/lon of cursor on the map
+var $cursorLocation;
+var $cursorTimer;
 
 
 // initialize onload by getting some global elements, then pass the ball off
@@ -42,33 +45,31 @@ function makeTheMap(){
 	L.tileLayer($tilesource).addTo($m);
 	// add n event listener for clicks
 	$m.on('click',trackCursor)
+	// monitor cursor position
+	$m.on('mousemove',function(e){$cursorLocation = e.latlng});
 }
 
 // start tracking finger movement
 function trackCursor(event){
 	// stop listening for clicks
 	$m.off('click',trackCursor);
-	// listen for mouse movement
-	$m.on('mousemove',addCoordinate);
+	// start sampling cursor locations
+	$cursorTimer = setInterval(addCoordinate,100);
 	// listen for clicks in a different way
 	$m.on('click',closeTrack);
 }
 
 function closeTrack(){
-	$m.off('mousemove',addCoordinate);
+	clearInterval($cursorTimer);
 	$m.off('click',closeTrack);
 	$m.on('click',trackCursor);
 	mapMatch($c)
 	$c = []
 }
 
-// append this event's coordinate object to the list
-function addCoordinate(event){
-	// right now the sampling rate is too high
-	// so I am artificially lowering it by sampling
-	if(Math.random() > 0.9){
-		$c.push(event.latlng)
-	}
+// append cursor location to the list
+function addCoordinate(){
+	$c.push($cursorLocation)
 }
 
 // send the coordinates to be matched on the cloud
