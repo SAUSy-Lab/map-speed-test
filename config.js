@@ -19,11 +19,11 @@ var $pointSets = [
 // Graphic SETTINGS
 // symbol for starting location
 var $Aicon = L.icon({
-	'iconUrl':'icons/A.png',
-	'iconAnchor':[20,35]
+	'iconUrl':'icons/A.svg',
+	'iconAnchor':[50,50]
 });
 // symbol for destination location
 var $Bicon = L.icon({
-	'iconUrl':'icons/B.png',
+	'iconUrl':'icons/B.svg',
 	'iconAnchor':[20,35]
 });
