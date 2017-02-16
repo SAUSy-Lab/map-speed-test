@@ -1,88 +1,75 @@
-// this script is currently in a very primitive state
-// it can map-match a trace more or less, but I need 
-// to start storing data somewhere
-
-
-
 // variables prefixed with $ are global
 // all others are local to their functions, or should be
 
 // abreviated document elements that may be used a lot
-var $d; // document
-var $m; // map object
-// coordinate string
-var $c = [];
-// constantly updated current lat/lon of cursor on the map
-var $cursorLocation = [];
-var $cursorTimer;
+var $m; // (currently empty) map object
 
 // A -> B lat,lon points and the average of the two
 var $A = [];
 var $B = [];
-var $mapCenter = [];
 
 // initialize onload by getting some global elements, then pass the ball off
-function start(){
-	$d = document;
-	makeTheMap();
-}
-
-// creates the map
-function makeTheMap(){
+function init(){
 	// select a random point set
 	var i = Math.floor(Math.random() * $pointSets.length);
-	$A = [$pointSets[i][0],$pointSets[i][1]];
-	$B = [$pointSets[i][2],$pointSets[i][3]];
+	// order is lon, lat
+	$A = [$pointSets[i][1],$pointSets[i][0]];
+	$B = [$pointSets[i][3],$pointSets[i][2]];
 	// just the average of the two for now
-	$mapCenter = [ ($A[1]+$B[1])/2, ($A[0]+$B[0])/2 ];
-	// leaflet: start map at a random location
+	var center = [ ($A[0]+$B[0])/2, ($A[1]+$B[1])/2 ];
+	// start map at a random location
 
-	$m = new ol.Map(
-		{
-			target: 'map',
-			layers: [
-				new ol.layer.Tile({ source: new ol.source.OSM() })
-			],
-			view: new ol.View(
-				{
-					center: ol.proj.fromLonLat($mapCenter),
-					zoom: 15
-				}
-			),
-			// no controls
-			controls: [],
-			// no interactions
-			interactions: []
-		}
-	);
+	// define map view
+	var view = new ol.View({
+		center: ol.proj.fromLonLat(center),
+		zoom: 16
+	});
+	// define basemap layer, OSM for now
+	var basemap = new ol.layer.Tile({
+		source: new ol.source.OSM()
+	});
 
-//	$m = L.map('map',{
-//		'center': $mapCenter,
-//		'zoom': 17,
-//		'zoomControl': false,
-//		'attributionControl':false,
-//		'animate':true
-//	});
-//	// disable all map movement
-//	$m.dragging.disable();
-//	$m.touchZoom.disable();
-//	$m.doubleClickZoom.disable();
-//	$m.scrollWheelZoom.disable();
-//	$m.keyboard.disable();
-//	// use OSM tiles for now
-//	L.tileLayer($tilesource).addTo($m);
-//	// create and then add A and B
-//	L.marker($A,{icon:$Aicon}).addTo($m);
-//	L.marker($B,{icon:$Bicon}).addTo($m);
-//	// add one-time event listeners for user interaction
-//	// TODO these are not working
-//	$m.on('touchstart',trackCursor);
-//	$m.on('touchend',closeTrack);
-//	$m.on('touchmove',function(e){$cursorLocation = e.latlng});
-//	// for mouse...
-	$m.on('click',trackCursor);
-	// monitor cursor position
-	$m.on('pointermove',updateCursorLocation);
+	// define feature for starting point
+	var A = new ol.Feature({
+		geometry: new ol.geom.Point(ol.proj.fromLonLat($A)),
+		label: 'starting point'
+	});
+	A.setStyle(Acon);
+
+	// define feature for ending point
+	var B = new ol.Feature({
+		geometry: new ol.geom.Point(ol.proj.fromLonLat($B)),
+		label: 'destination'
+	});
+	B.setStyle(Bcon);
+
+	// define A->B marker layer
+	var source = new ol.source.Vector();
+	source.addFeatures([A,B]);
+	var markers = new ol.layer.Vector({
+		source: source
+	});
+
+	// create the bloody map
+	$m = new ol.Map({
+		target:'map',
+		layers:[basemap,markers],
+		view: view,
+		// no controls
+		controls: []
+	});
+/*
+	// no interactions
+	interactions: []
+*/
+}
+
+// function to convert lon/lat to ol point
+// basically a mask for a shorter name
+function lltp(lonlat){
+	var lon = lonlat[0];
+	var lat = lonlat[1];
+	
 }
 
 // get and store the location of the cursor
@@ -94,7 +81,7 @@ function updateCursorLocation(event){
 
 // start tracking movement
 function trackCursor(event){
-	console.log('tracking cursor')
+	console.log('tracking cursor');
 	//console.log(event.coordinate[0])
 	// start sampling cursor locations
 	$m.un('click',trackCursor);

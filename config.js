@@ -17,13 +17,20 @@ var $pointSets = [
 ];
 
 // Graphic SETTINGS
-// symbol for starting location
-var $Aicon = L.icon({
-	'iconUrl':'icons/A.svg',
-	'iconAnchor':[50,50]
+
+var Acon = new ol.style.Style({
+	image: new ol.style.Icon({
+		anchor: [0.5,0.5],
+		anchorXUnits: 'fraction',
+		anchorYUnits: 'fraction',
+		src: 'icons/A.svg'
+	})
 });
-// symbol for destination location
-var $Bicon = L.icon({
-	'iconUrl':'icons/B.svg',
-	'iconAnchor':[20,35]
+var Bcon = new ol.style.Style({
+	image: new ol.style.Icon({
+		anchor: [0.5,0.5],
+		anchorXUnits: 'fraction',
+		anchorYUnits: 'fraction',
+		src: 'icons/B.svg'
+	})
 });
