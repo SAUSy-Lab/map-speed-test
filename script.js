@@ -8,6 +8,8 @@ var $m; // (currently empty) map object
 var $A = [];
 var $B = [];
 
+var $scratch;
+
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
 	// select a random point set
@@ -28,40 +30,50 @@ function init(){
 	var basemap = new ol.layer.Tile({
 		source: new ol.source.OSM()
 	});
-
 	// define feature for starting point
 	var A = new ol.Feature({
 		geometry: new ol.geom.Point(ol.proj.fromLonLat($A)),
 		label: 'starting point'
 	});
 	A.setStyle(Acon);
-
 	// define feature for ending point
 	var B = new ol.Feature({
 		geometry: new ol.geom.Point(ol.proj.fromLonLat($B)),
 		label: 'destination'
 	});
 	B.setStyle(Bcon);
-
-	// define A->B marker layer
+	// add A->B features to a layer so they can be included in the map
 	var source = new ol.source.Vector();
 	source.addFeatures([A,B]);
 	var markers = new ol.layer.Vector({
 		source: source
 	});
 
-	// create the bloody map
+	// TODO get this working (freehand drawing interaction)
+
+	// place for storing scribbles
+	$scratch = new ol.source.Vector();
+	var scratchLayer = new ol.layer.Vector({
+		source: $scratch 
+	});	
+
+	// interaction object	
+	var draw = new ol.interaction.Draw({
+		source: $scratch,
+		type: 'LineString',
+		freehand: true
+	});
+
+	// create the map
 	$m = new ol.Map({
 		target:'map',
-		layers:[basemap,markers],
+		layers:[basemap,markers,scratchLayer],
 		view: view,
 		// no controls
 		controls: []
 	});
-/*
-	// no interactions
-	interactions: []
-*/
+	// add the interaction to the map once created
+	$m.addInteraction(draw);
 }
 
 // function to convert lon/lat to ol point
