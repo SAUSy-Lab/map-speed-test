@@ -8,8 +8,9 @@ var $m; // (currently empty) map object
 var $A = [];
 var $B = [];
 
-var $scratch;
-var $draw;
+// drawing start and end times
+var $start;
+var $end;
 
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
@@ -51,14 +52,14 @@ function init(){
 	});
 
 	// place for storing scribbles
-	$scratch = new ol.source.Vector();
+	var scratch = new ol.source.Vector();
 	var scratchLayer = new ol.layer.Vector({
-		source: $scratch 
+		source: scratch 
 	});	
 
 	// interaction object	
-	$draw = new ol.interaction.Draw({
-		source: $scratch,
+	var draw = new ol.interaction.Draw({
+		source: scratch,
 		type: 'LineString',
 		freehand: true
 	});
@@ -72,17 +73,27 @@ function init(){
 		controls: []
 	});
 	// add the interaction to the map once created
-	$m.addInteraction($draw);
+	$m.addInteraction(draw);
+
+	// listen for the start of a draw motion
+	draw.once('drawstart',function(event){
+		// note the time
+		var date = new Date();
+		$start = date.getTime();
+	});
 
 	// listen for the end of a draw motion
-	//$draw.on('drawstart',console.log('started'));
-
-	$draw.on('drawend',function(event){
+	draw.once('drawend',function(event){
+		// note the time the motion ended
+		var date = new Date();
+		$start = date.getTime();
+		// get the geometry
 		var feature = event.feature;
 		var geometry = feature.getGeometry();
 		var coordinates = geometry.getCoordinates();
 		// transform to lat-lons
 		coordinates = coords2latlon(coordinates);
+		// send to the server
 		mapMatch(coordinates);
 	});
 }
@@ -119,16 +130,9 @@ function mapMatch(coords){
 				console.log('match returned');
 				var data = JSON.parse(r.responseText);
 				var matchGeom = data.matchings[0].geometry;
-				var f = ol.format.JSONFeature.readFeature(matchGeom);
-				console.log(f);
 			}
 		}
 	}
 	r.send();
-}
-
-// calculate euclidean distance from two perpendicular lengths
-function euclid(a,b){
-	return Math.sqrt( Math.pow(a,2) + Math.pow(b,2) );
 }
 
