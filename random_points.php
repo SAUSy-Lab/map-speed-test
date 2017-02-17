@@ -1,8 +1,10 @@
 <?php
 #quickly return json containing randomly selected OD points from server-side DB
 
+require 'config.php';
+
 # connect to DB
-$connection = pg_connect("");
+$connection = pg_connect($DBconnectionString);
 
 # select a random row
 $query = "
@@ -20,5 +22,8 @@ $record = pg_fetch_object($result);
 
 # format it to JSON and send
 echo json_encode($record);
+
+# close the connection
+pg_close($connection);
 
 ?>
