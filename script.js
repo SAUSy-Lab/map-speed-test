@@ -9,6 +9,7 @@ var $A = [];
 var $B = [];
 
 var $scratch;
+var $draw;
 
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
@@ -49,8 +50,6 @@ function init(){
 		source: source
 	});
 
-	// TODO get this working (freehand drawing interaction)
-
 	// place for storing scribbles
 	$scratch = new ol.source.Vector();
 	var scratchLayer = new ol.layer.Vector({
@@ -58,7 +57,7 @@ function init(){
 	});	
 
 	// interaction object	
-	var draw = new ol.interaction.Draw({
+	$draw = new ol.interaction.Draw({
 		source: $scratch,
 		type: 'LineString',
 		freehand: true
@@ -73,45 +72,30 @@ function init(){
 		controls: []
 	});
 	// add the interaction to the map once created
-	$m.addInteraction(draw);
+	$m.addInteraction($draw);
+
+	// listen for the end of a draw motion
+	//$draw.on('drawstart',console.log('started'));
+
+	$draw.on('drawend',function(event){
+		var feature = event.feature;
+		var geometry = feature.getGeometry();
+		var coordinates = geometry.getCoordinates();
+		// transform to lat-lons
+		coordinates = coords2latlon(coordinates);
+		mapMatch(coordinates);
+	});
 }
 
-// function to convert lon/lat to ol point
-// basically a mask for a shorter name
-function lltp(lonlat){
-	var lon = lonlat[0];
-	var lat = lonlat[1];
-	
-}
-
-// get and store the location of the cursor
-function updateCursorLocation(event){
-	var coords = event.coordinate;
-	var lonlat = ol.proj.toLonLat(coords);
-	$cursorLocation = lonlat;
-};
-
-// start tracking movement
-function trackCursor(event){
-	console.log('tracking cursor');
-	//console.log(event.coordinate[0])
-	// start sampling cursor locations
-	$m.un('click',trackCursor);
-	$m.on('click',closeTrack);
-	$cursorTimer = setInterval(addCoordinate,$samplingRate);
-}
-
-function closeTrack(){
-	clearInterval($cursorTimer);
-	$m.un('click',closeTrack);
-	$m.on('click',trackCursor);
-	mapMatch($c)
-	$c = []
-}
-
-// append cursor location to the list
-function addCoordinate(){
-	$c.push($cursorLocation)
+// project linestring to EPSG:4326 [lon,lat]
+function coords2latlon(coords){
+	var newcoords = [];
+	for(i=0;i<coords.length;i++){
+		newcoords.push(
+			ol.proj.toLonLat(coords[i])
+		);
+	}
+	return newcoords;
 }
 
 // send the coordinates to be matched on the cloud
@@ -141,17 +125,6 @@ function mapMatch(coords){
 		}
 	}
 	r.send();
-}
-
-
-// project and unproject points. mask for overly long names
-// lat-lon to pixel
-function lToP(latLngObject){
-	return $m.latLngToContainerPoint(latLngObject);
-}
-// pixel to lat-lon
-function pToL(point){
-	return $m.containerPointToLatLng(point);
 }
 
 // calculate euclidean distance from two perpendicular lengths
