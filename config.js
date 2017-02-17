@@ -1,14 +1,10 @@
 // script will hold user-specific information like server location, DB access credentials, etc
 
-// tile layer source
-var $tilesource = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+// tile layer source, formatted for ol.source.XYZ
+var $tileURL = 'https://api.mapbox.com/styles/v1/bike756/ciza5is0x005e2rnqjppkh10x/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYmlrZTc1NiIsImEiOiI5Y3p6aTZFIn0.fWDYyONWAQgrHQbdrFMbfA'
 
 // OSRM server address 
-// this should probably be your own server
 var $OSRMserver = 'http://206.167.182.17:5000'
-
-// cursor location sampling rate in milliseconds
-var $samplingRate = 100
 
 var $pointSets = [
 	// latA, lonA, latB, lonB
