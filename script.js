@@ -30,7 +30,11 @@ function init(){
 	});
 	// define basemap layer, OSM for now
 	var basemap = new ol.layer.Tile({
-		source: new ol.source.OSM()
+		source: new ol.source.XYZ({
+			url: 'https://api.mapbox.com/styles/v1/bike756/ciza5is0x005e2rnqjppkh10x/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYmlrZTc1NiIsImEiOiI5Y3p6aTZFIn0.fWDYyONWAQgrHQbdrFMbfA'
+		})
+
+		//source: new ol.source.OSM()
 	});
 	// define feature for starting point
 	var A = new ol.Feature({
