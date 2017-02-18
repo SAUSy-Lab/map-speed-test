@@ -4,4 +4,6 @@ body {
 	font-family: CooperHewitt-Medium; }
 html, body, #map {
 	height: 100%;
-	width: 100%; }
+	width: 100%;
+	background: #000000
+}

@@ -32,6 +32,41 @@ function init(){
 	r.send();
 }
 
+// style function for rendering linear features based on attributes
+function stylefunction(feature){
+	// get properties fo the feature
+	var p = feature.getProperties();
+	// condition for non-rendering
+	if( p.car_comp == undefined ){
+		return null;
+	}
+	// default white
+	var color = '#ffffff';
+	// vary color by property
+	if( p.car_comp == -1 ){ // is deadend
+		var g = $greymin.toString(16);
+		color = '#'+g+g+g;
+	}
+	if(p.car_direct != undefined){ // has directness value
+		if( p.car_direct < 1 ){ // is not direct
+			// define how much range we have
+			var range = 255 - $greymin;
+			// vary value by value
+			var greyval = Math.floor(p.car_direct * range) + $greymin;
+			g = greyval.toString(16);
+			color = '#'+g+g+g;
+		}
+	}
+	// create style object to return
+	var style = new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: color,
+			width: 2
+		})
+	});
+	return [style];
+}
+
 // make the map and all that, after the points are chosen
 function make_the_map(){
 	// create the map
@@ -40,11 +75,16 @@ function make_the_map(){
 		// no controls
 		controls: []
 	});
-	// define basemap layer, OSM for now
-	var basemap = new ol.layer.Tile({
-		source: new ol.source.XYZ({
-			url: $tileURL
-		})
+	// define basemap layer, which is currently 
+	// vector tiles being served by mapbox
+	var basemap = new ol.layer.VectorTile({
+		source: new ol.source.VectorTile({
+			url: $tileURL,
+			tileGrid: ol.tilegrid.createXYZ({maxZoom: 20}),
+			format: new ol.format.MVT(),
+			tilePixelRatio: 16
+		}),
+		style: stylefunction
 	});
 	$m.addLayer(basemap);
 
@@ -84,6 +124,8 @@ function make_the_map(){
 		source: scratch 
 	});	
 	$m.addLayer(scratchLayer);
+
+
 
 	// interaction object	
 	var draw = new ol.interaction.Draw({
