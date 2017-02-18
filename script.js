@@ -150,6 +150,15 @@ function mapMatch(coords){
 				console.log('match returned');
 				var data = JSON.parse(r.responseText);
 				var matchGeom = data.matchings[0].geometry;
+				// TODO render match geometry
+				var source = ol.source.GeoJSON({
+					feature: matchGeom,
+					projection: 'EPSG:4326'
+				});
+				var layer = ol.layer.Vector({
+					source: source
+				});
+				$m.addLayer(layer);
 			}
 		}
 	}
