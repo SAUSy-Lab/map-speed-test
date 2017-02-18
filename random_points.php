@@ -21,7 +21,7 @@ $result = pg_query($query);
 $record = pg_fetch_object($result);
 
 # format it to JSON and send
-echo json_encode($record);
+echo json_encode($record,JSON_NUMERIC_CHECK);
 
 # close the connection
 pg_close($connection);

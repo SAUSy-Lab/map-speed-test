@@ -4,7 +4,7 @@
 // abreviated document elements that may be used a lot
 var $m; // (currently empty) map object
 
-// A -> B lat,lon points and the average of the two
+// A -> B lat,lon points
 var $A = [];
 var $B = [];
 
@@ -14,19 +14,31 @@ var $end;
 
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
-	// select a random point set
-	var i = Math.floor(Math.random() * $pointSets.length);
-	// order is lon, lat
-	$A = [$pointSets[i][1],$pointSets[i][0]];
-	$B = [$pointSets[i][3],$pointSets[i][2]];
-	// just the average of the two for now
-	var center = [ ($A[0]+$B[0])/2, ($A[1]+$B[1])/2 ];
-	// start map at a random location
+	// request points
+	var r = new XMLHttpRequest();
+	r.open('get',$randomPointsURL,true);
+	r.onreadystatechange = function(){
+		if(r.readyState == 4){ // finished
+			if(r.status == 200){ // got good response
+				var data = JSON.parse(r.responseText);
+				$A = [data.lon1,data.lat1];
+				$B = [data.lon2,data.lat2];
+				console.log(data);
+				// put the points to use
+				make_the_map();
+			}
+		}
+	}
+	r.send();
+}
 
-	// define map view
-	var view = new ol.View({
-		center: ol.proj.fromLonLat(center),
-		zoom: 16
+// make the map and all that, after the points are chosen
+function make_the_map(){
+	// create the map
+	$m = new ol.Map({
+		target:'map',
+		// no controls
+		controls: []
 	});
 	// define basemap layer, OSM for now
 	var basemap = new ol.layer.Tile({
@@ -34,13 +46,17 @@ function init(){
 			url: $tileURL
 		})
 	});
-	// define feature for starting point
+	$m.addLayer(basemap);
+
+	// define features for starting and ending points
+	// these will bee added to a source and then a layer
+	// the source will help us find the extent for the map
 	var A = new ol.Feature({
 		geometry: new ol.geom.Point(ol.proj.fromLonLat($A)),
 		label: 'starting point'
 	});
 	A.setStyle(Acon);
-	// define feature for ending point
+
 	var B = new ol.Feature({
 		geometry: new ol.geom.Point(ol.proj.fromLonLat($B)),
 		label: 'destination'
@@ -52,12 +68,22 @@ function init(){
 	var markers = new ol.layer.Vector({
 		source: source
 	});
+	$m.addLayer(markers);
+
+	// define map view
+	var view = new ol.View();
+	view.fit(
+		source.getExtent(),
+		{size: $m.getSize()}
+	);
+	$m.setView(view);
 
 	// place for storing scribbles
 	var scratch = new ol.source.Vector();
 	var scratchLayer = new ol.layer.Vector({
 		source: scratch 
 	});	
+	$m.addLayer(scratchLayer);
 
 	// interaction object	
 	var draw = new ol.interaction.Draw({
@@ -66,14 +92,6 @@ function init(){
 		freehand: true
 	});
 
-	// create the map
-	$m = new ol.Map({
-		target:'map',
-		layers:[basemap,markers,scratchLayer],
-		view: view,
-		// no controls
-		controls: []
-	});
 	// add the interaction to the map once created
 	$m.addInteraction(draw);
 
