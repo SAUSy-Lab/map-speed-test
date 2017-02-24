@@ -10,6 +10,7 @@ CREATE TABLE od_results (
 	id serial PRIMARY KEY, 
 	od_id integer, -- id of od table
 	trace geometry(LINESTRING,4326),
+	display_time numeric, -- javascript time in milliseconds, time the map was revealed
 	start_time numeric, -- javascript time in milliseconds
 	end_time numeric, -- javascript time in milliseconds
 	zoom_level real,
