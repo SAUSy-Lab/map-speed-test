@@ -8,9 +8,10 @@ var $m; // (currently empty) map object
 var $A = [];
 var $B = [];
 
-// drawing start and end times
-var $start;
-var $end;
+var $start; // moment finger touches the screen
+var $end;	// moment finger leaves the screen
+var $od_id;	// ID of OD pair presented
+var $zoom;	// displayed zoom level
 
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
@@ -26,6 +27,8 @@ function init(){
 				console.log(data);
 				// put the points to use
 				make_the_map();
+				// record the ID of the apir
+				$od_id = data.id;
 			}
 		}
 	}
@@ -117,6 +120,8 @@ function make_the_map(){
 		{size: $m.getSize()}
 	);
 	$m.setView(view);
+	// note the zoom level
+	$zoom = view.getZoom();
 
 	// place for storing scribbles
 	var scratch = new ol.source.Vector();
@@ -148,16 +153,42 @@ function make_the_map(){
 	draw.once('drawend',function(event){
 		// note the time the motion ended
 		var date = new Date();
-		$start = date.getTime();
+		$end = date.getTime();
 		// get the geometry
 		var feature = event.feature;
 		var geometry = feature.getGeometry();
 		var coordinates = geometry.getCoordinates();
 		// transform to lat-lons
 		coordinates = coords2latlon(coordinates);
-		// send to the server
+		// send to the map-matching server
 		mapMatch(coordinates);
+		// send to DB
+		storeResults(coordinates);
 	});
+}
+
+// transform a string of lon-lat coords to WKT LINESTRING
+function coordsToWKT(coordinates){
+	var c = coordinates;
+	var nc = [];
+	for(i=0;i<c.length;i++){
+		nc.push(c[i][0]+' '+c[i][1]);
+	}
+	var WKT = 'LINESTRING('+nc.join(',')+')';
+	return WKT;
+}
+
+// send data to be stored on the server database
+function storeResults(coords){
+	var r = new XMLHttpRequest();
+	var URL = $storePHPURL+'?';
+	URL += 'od_id='+$od_id;
+	URL += '&start_time='+$start;
+	URL += '&end_time='+$end;
+	URL += '&zoom_level='+$zoom;
+	URL += '&trace='+coordsToWKT(coords);
+	r.open('get',URL,true);
+	r.send();
 }
 
 // project linestring to EPSG:4326 [lon,lat]
@@ -193,14 +224,14 @@ function mapMatch(coords){
 				var data = JSON.parse(r.responseText);
 				var matchGeom = data.matchings[0].geometry;
 				// TODO render match geometry
-				var source = ol.source.GeoJSON({
-					feature: matchGeom,
-					projection: 'EPSG:4326'
-				});
-				var layer = ol.layer.Vector({
-					source: source
-				});
-				$m.addLayer(layer);
+//				var source = ol.source.GeoJSON({
+//					feature: matchGeom,
+//					projection: 'EPSG:4326'
+//				});
+//				var layer = ol.layer.Vector({
+//					source: source
+//				});
+//				$m.addLayer(layer);
 			}
 		}
 	}

@@ -6,6 +6,8 @@ var $tileURL = 'https://a.tiles.mapbox.com/v4/bike756.838mwyhs/{z}/{x}/{y}.vecto
 // OSRM server address 
 var $OSRMserver = 'http://206.167.182.17:5000'
 
+var $storePHPURL = 'http://206.167.182.17/~ubuntu/store.php'
+
 var $randomPointsURL = 'http://206.167.182.17/~ubuntu/random_points.php';
 
 // grey for deadends, from 0 black to 255 white

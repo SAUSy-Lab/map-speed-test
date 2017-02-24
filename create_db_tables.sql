@@ -1,12 +1,12 @@
 -- table for points of origin and destination
-CREATE TABLE od (
+CREATE TABLE map_speed_od (
 	id serial PRIMARY KEY,
 	vector geometry(LINESTRING,4326)
 );
 
 
 -- table for storing results
-CREATE TABLE od_results (
+CREATE TABLE map_speed_results (
 	id serial PRIMARY KEY, 
 	od_id integer, -- id of od table
 	trace geometry(LINESTRING,4326),
