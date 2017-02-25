@@ -6,6 +6,7 @@ CREATE TABLE map_speed_od (
 
 
 -- table for storing results
+
 CREATE TABLE map_speed_results (
 	id serial PRIMARY KEY, 
 	od_id integer, -- id of od table
@@ -14,5 +15,6 @@ CREATE TABLE map_speed_results (
 	start_time numeric, -- javascript time in milliseconds
 	end_time numeric, -- javascript time in milliseconds
 	zoom_level real,
-	map_extent geometry(POLYGON,4326) -- bounding box of map
+	map_extent geometry(POLYLINE,4326), -- line from screen minX,minY->maxX,maxY
+	min_grey real -- variable of interest, grey of deadends, varied randomly 
 );

@@ -13,6 +13,8 @@ $start_time =	pg_escape_literal($_GET['start_time']);
 $end_time	=	pg_escape_literal($_GET['end_time']);
 $zoom_level	=	pg_escape_literal($_GET['zoom_level']);
 $trace		=	pg_escape_string($_GET['trace']);
+$map_extent	=	pg_escape_string($_GET['map_extent']);
+$min_grey	=	pg_escape_string($_GET['min_grey']);
 
 # select a random row
 $query = "
@@ -20,17 +22,21 @@ $query = "
 		( 
 			od_id,
 			trace,
+			map_extent,
 			start_time, 
 			end_time,
-			zoom_level
+			zoom_level,
+			min_grey
 		) 
 		VALUES 
 		( 
 			$od_id,
 			ST_GeomFromText('$trace',4326),
+			ST_GeomFromText('$map_extent',4326),
 			$start_time, 
 			$end_time,
-			$zoom_level
+			$zoom_level,
+			$min_grey
 		);
 ";
 $result = pg_query($connection,$query);

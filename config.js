@@ -14,6 +14,10 @@ var $randomPointsURL = 'http://206.167.182.17/~ubuntu/random_points.php';
 // int please, and > 16
 var $greymin = 80
 
+var $grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
+
+console.log($grey);
+
 // Graphic SETTINGS
 
 var Acon = new ol.style.Style({

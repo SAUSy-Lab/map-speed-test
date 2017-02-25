@@ -47,15 +47,15 @@ function stylefunction(feature){
 	var color = '#ffffff';
 	// vary color by property
 	if( p.car_comp == -1 ){ // is deadend
-		var g = $greymin.toString(16);
+		var g = $grey.toString(16);
 		color = '#'+g+g+g;
 	}
 	if(p.car_direct != undefined){ // has directness value
 		if( p.car_direct < 1 ){ // is not direct
 			// define how much range we have
-			var range = 255 - $greymin;
+			var range = 255 - $grey;
 			// vary value by value
-			var greyval = Math.floor(p.car_direct * range) + $greymin;
+			var greyval = Math.floor(p.car_direct * range) + $grey;
 			g = greyval.toString(16);
 			color = '#'+g+g+g;
 		}
@@ -187,8 +187,20 @@ function storeResults(coords){
 	URL += '&end_time='+$end;
 	URL += '&zoom_level='+$zoom;
 	URL += '&trace='+coordsToWKT(coords);
+	URL += '&map_extent='+extentWKT();
+	URL += '&min_grey='+$grey;
 	r.open('get',URL,true);
 	r.send();
+}
+
+// get current extent as a WKT LINESTRING in 4326
+function extentWKT(){
+	// get the extent object
+	var e = $m.getView().calculateExtent( $m.getSize() );
+	// project to 4326
+	e = coords2latlon([   [ e[0],e[1] ], [ e[2],e[3] ]   ]);
+	// format as WKT
+	return 'LINESTRING('+e[0][0]+' '+e[0][1]+','+e[1][0]+' '+e[1][1]+')';
 }
 
 // project linestring to EPSG:4326 [lon,lat]
