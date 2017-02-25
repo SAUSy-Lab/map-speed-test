@@ -8,10 +8,10 @@ var $m; // (currently empty) map object
 var $A = [];
 var $B = [];
 
-var $start; // moment finger touches the screen
-var $end;	// moment finger leaves the screen
-var $od_id;	// ID of OD pair presented
-var $zoom;	// displayed zoom level
+var $load_time;	// moment the map has been revealed
+var $start_time;	// moment finger touches the screen
+var $end_time;		// moment finger leaves the screen
+var $od_id;			// ID of OD pair presented
 
 // initialize onload by getting some global elements, then pass the ball off
 function init(){
@@ -24,10 +24,9 @@ function init(){
 				var data = JSON.parse(r.responseText);
 				$A = [data.lon1,data.lat1];
 				$B = [data.lon2,data.lat2];
-				console.log(data);
 				// put the points to use
 				make_the_map();
-				// record the ID of the apir
+				// record the ID of the OD pair
 				$od_id = data.id;
 			}
 		}
@@ -35,93 +34,29 @@ function init(){
 	r.send();
 }
 
-// style function for rendering linear features based on attributes
-function stylefunction(feature){
-	// get properties fo the feature
-	var p = feature.getProperties();
-	// condition for non-rendering
-	if( p.car_comp == undefined ){
-		return null;
-	}
-	// default white
-	var color = '#ffffff';
-	// vary color by property
-	if( p.car_comp == -1 ){ // is deadend
-		var g = $grey.toString(16);
-		color = '#'+g+g+g;
-	}
-	if(p.car_direct != undefined){ // has directness value
-		if( p.car_direct < 1 ){ // is not direct
-			// define how much range we have
-			var range = 255 - $grey;
-			// vary value by value
-			var greyval = Math.floor(p.car_direct * range) + $grey;
-			g = greyval.toString(16);
-			color = '#'+g+g+g;
-		}
-	}
-	// create style object to return
-	var style = new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: color,
-			width: 2
-		})
-	});
-	return [style];
-}
-
 // make the map and all that, after the points are chosen
 function make_the_map(){
 	// create the map
-	$m = new ol.Map({
-		target:'map',
-		// no controls
-		controls: []
-	});
-	// define basemap layer, which is currently 
-	// vector tiles being served by mapbox
-	var basemap = new ol.layer.VectorTile({
-		source: new ol.source.VectorTile({
-			url: $tileURL,
-			tileGrid: ol.tilegrid.createXYZ({maxZoom: 20}),
-			format: new ol.format.MVT(),
-			tilePixelRatio: 16
-		}),
-		style: stylefunction
-	});
-	$m.addLayer(basemap);
+	$m = new ol.Map({target:'map',controls:[],layers:[$basemap]});
 
 	// define features for starting and ending points
 	// these will bee added to a source and then a layer
 	// the source will help us find the extent for the map
-	var A = new ol.Feature({
-		geometry: new ol.geom.Point(ol.proj.fromLonLat($A)),
-		label: 'starting point'
-	});
+	var A = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($A))});
 	A.setStyle(Acon);
-
-	var B = new ol.Feature({
-		geometry: new ol.geom.Point(ol.proj.fromLonLat($B)),
-		label: 'destination'
-	});
+	var B = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($B))});
 	B.setStyle(Bcon);
 	// add A->B features to a layer so they can be included in the map
-	var source = new ol.source.Vector();
-	source.addFeatures([A,B]);
+	var source = new ol.source.Vector({features:[A,B]});
 	var markers = new ol.layer.Vector({
 		source: source
 	});
 	$m.addLayer(markers);
-
 	// define map view
 	var view = new ol.View();
-	view.fit(
-		source.getExtent(),
-		{size: $m.getSize()}
-	);
+	// fit it to the screen and OD locations
+	view.fit( source.getExtent(), {size: $m.getSize()} );
 	$m.setView(view);
-	// note the zoom level
-	$zoom = view.getZoom();
 
 	// place for storing scribbles
 	var scratch = new ol.source.Vector();
@@ -130,30 +65,24 @@ function make_the_map(){
 	});	
 	$m.addLayer(scratchLayer);
 
-
-
-	// interaction object	
+	// create the DRAW interaction object
 	var draw = new ol.interaction.Draw({
 		source: scratch,
 		type: 'LineString',
 		freehand: true
 	});
-
-	// add the interaction to the map once created
+	// add the interaction to the map
 	$m.addInteraction(draw);
-
-	// listen for the start of a draw motion
+	// listen for the start of a draw motion and note the time
 	draw.once('drawstart',function(event){
-		// note the time
 		var date = new Date();
-		$start = date.getTime();
+		$start_time = date.getTime();
 	});
-
 	// listen for the end of a draw motion
 	draw.once('drawend',function(event){
-		// note the time the motion ended
+		// note the time
 		var date = new Date();
-		$end = date.getTime();
+		$end_time = date.getTime();
 		// get the geometry
 		var feature = event.feature;
 		var geometry = feature.getGeometry();
@@ -162,7 +91,7 @@ function make_the_map(){
 		coordinates = coords2latlon(coordinates);
 		// send to the map-matching server
 		mapMatch(coordinates);
-		// send to DB
+		// send results to the DB
 		storeResults(coordinates);
 	});
 }
@@ -183,9 +112,9 @@ function storeResults(coords){
 	var r = new XMLHttpRequest();
 	var URL = $storePHPURL+'?';
 	URL += 'od_id='+$od_id;
-	URL += '&start_time='+$start;
-	URL += '&end_time='+$end;
-	URL += '&zoom_level='+$zoom;
+	URL += '&start_time='+$start_time;
+	URL += '&end_time='+$end_time;
+	URL += '&zoom_level='+$m.getView().getZoom();
 	URL += '&trace='+coordsToWKT(coords);
 	URL += '&map_extent='+extentWKT();
 	URL += '&min_grey='+$grey;

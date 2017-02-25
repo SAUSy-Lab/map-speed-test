@@ -16,9 +16,54 @@ var $greymin = 80
 
 var $grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
 
-console.log($grey);
+// define basemap layer, (currently vector tiles being served from mapbox)
+var $basemap = new ol.layer.VectorTile({
+	source: new ol.source.VectorTile({
+		url: $tileURL,
+		tileGrid: ol.tilegrid.createXYZ({maxZoom: 20}),
+		format: new ol.format.MVT(),
+		tilePixelRatio: 16
+	}),
+	style: stylefunction
+});
 
-// Graphic SETTINGS
+// style function for rendering linear features based on attributes
+function stylefunction(feature){
+	// get properties fo the feature
+	var p = feature.getProperties();
+	// condition for non-rendering
+	if( p.car_comp == undefined ){
+		return null;
+	}
+	// default white
+	var color = '#ffffff';
+	// vary color by property
+	if( p.car_comp == -1 ){ // is deadend
+		var g = $grey.toString(16);
+		color = '#'+g+g+g;
+	}
+	if(p.car_direct != undefined){ // has directness value
+		if( p.car_direct < 1 ){ // is not direct
+			// define how much range we have
+			var range = 255 - $grey;
+			// vary value by value
+			var greyval = Math.floor(p.car_direct * range) + $grey;
+			g = greyval.toString(16);
+			color = '#'+g+g+g;
+		}
+	}
+	// create style object to return
+	var style = new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: color,
+			width: 2
+		})
+	});
+	return [style];
+}
+
+
+// Icon settings for Origin and Destination
 
 var Acon = new ol.style.Style({
 	image: new ol.style.Icon({
