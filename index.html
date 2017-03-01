@@ -14,8 +14,12 @@
 	<link rel="stylesheet" href="style.css"> 
 </head>
 <!-- on load, a function from script.js is called, initiating the app -->
-<body onload="init()">
+<body>
 	<!-- container for the leaflet-generated web map -->
 	<div id="map" class="map"></div>
+	<!-- Button controls Javascript and CSS used to display only those which are relevant -->
+	<div id="controls">
+		<button id="startbutton" type="button" onclick="start()" >START</button>
+	</div>
 </body>
 </html> 

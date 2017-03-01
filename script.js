@@ -7,72 +7,55 @@ var $m; // (currently empty) map object
 // A -> B lat,lon points
 var $A = [];
 var $B = [];
+// (currently) empty OD source
+var $ODsource = new ol.source.Vector();
+
 
 var $load_time;	// moment the map has been revealed
 var $start_time;	// moment finger touches the screen
 var $end_time;		// moment finger leaves the screen
 var $od_id;			// ID of OD pair presented
 
-// initialize onload by getting some global elements, then pass the ball off
-function init(){
-	// request points
-	var r = new XMLHttpRequest();
-	r.open('get',$randomPointsURL,true);
-	r.onreadystatechange = function(){
-		if(r.readyState == 4){ // finished
-			if(r.status == 200){ // got good response
-				var data = JSON.parse(r.responseText);
-				$A = [data.lon1,data.lat1];
-				$B = [data.lon2,data.lat2];
-				// put the points to use
-				make_the_map();
-				// record the ID of the OD pair
-				$od_id = data.id;
-			}
-		}
-	}
-	r.send();
-}
 
-// make the map and all that, after the points are chosen
-function make_the_map(){
-	// add a listener for completed loading of the baselayer
-	$baseTileSource.on('tileloadend',function(){
-		var date = new Date();
-		$load_time = date.getTime();
-	});
-	
+// START button has been pressed. Do all the stuff!
+function start(){
+	var de = document.documentElement;
+	// make the page full screen (lots of campatibility BS)
+	if(de.requestFullscreen) {
+		de.requestFullscreen();
+	} else if(de.mozRequestFullScreen) {
+		de.mozRequestFullScreen();
+	} else if(de.webkitRequestFullscreen) {
+		de.webkitRequestFullscreen();
+	} else if(de.msRequestFullscreen) {
+		de.msRequestFullscreen();
+	}
+	// hide the button
+	var button = document.getElementById('startbutton');
+	button.parentNode.removeChild(button);
+
+	// DO THE MAP
+	// make a map with all the stuff except the stuff that changes per OD
+
 	var baselayer = new ol.layer.VectorTile({
 		source: $baseTileSource,
 		style: stylefunction
 	});
 	$m = new ol.Map({target:'map',controls:[],layers:[baselayer]});
-
-	// define features for starting and ending points
-	// these will bee added to a source and then a layer
-	// the source will help us find the extent for the map
-	var A = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($A))});
-	A.setStyle(Acon);
-	var B = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($B))});
-	B.setStyle(Bcon);
-	// add A->B features to a layer so they can be included in the map
-	var source = new ol.source.Vector({features:[A,B]});
-	var markers = new ol.layer.Vector({
-		source: source
+	// add a listener for completed loading of the baselayer
+	$baseTileSource.on('tileloadend',function(){
+		var date = new Date();
+		$load_time = date.getTime();
 	});
-	$m.addLayer(markers);
-	// define map view
-	var view = new ol.View();
-	// fit it to the screen and OD locations
-	view.fit( source.getExtent(), {size: $m.getSize()} );
-	$m.setView(view);
-
 	// place for storing scribbles
 	var scratch = new ol.source.Vector();
 	var scratchLayer = new ol.layer.Vector({
 		source: scratch 
 	});	
 	$m.addLayer(scratchLayer);
+	// add A->B features to a layer so they can be included in the map
+	var markers = new ol.layer.Vector({ source:$ODsource });
+	$m.addLayer(markers);
 
 	// create the DRAW interaction object
 	var draw = new ol.interaction.Draw({
@@ -103,6 +86,42 @@ function make_the_map(){
 		// send results to the DB
 		storeResults(coordinates);
 	});
+	// call for a new OD initialization
+	newOD();
+}
+
+// request a new random OD pair from the server
+// store it in the global variables
+// load it into the map when ready
+function newOD(){
+	// request points
+	var r = new XMLHttpRequest();
+	r.open('get',$randomPointsURL,true);
+	r.onreadystatechange = function(){
+		if(r.readyState == 4){ // finished
+			if(r.status == 200){ // got good response
+				var data = JSON.parse(r.responseText);
+				// store globally
+				$A = [data.lon1,data.lat1];
+				$B = [data.lon2,data.lat2];
+				$od_id = data.id;
+				// define features
+				var A = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($A))});
+				var B = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($B))});
+				A.setStyle(Acon);
+				B.setStyle(Bcon);
+				// clear old features from the layer
+				$ODsource.clear();
+				// add the new/replacement features
+				$ODsource.addFeatures([A,B]);
+				// fit the screen to the new ODs
+				var view = new ol.View();
+				view.fit( $ODsource.getExtent(), {size: $m.getSize()} );
+				$m.setView(view);
+			}
+		}
+	}
+	r.send();
 }
 
 // transform a string of lon-lat coords to WKT LINESTRING
@@ -188,4 +207,3 @@ function mapMatch(coords){
 	}
 	r.send();
 }
-

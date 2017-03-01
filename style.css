@@ -7,3 +7,14 @@ html, body, #map {
 	width: 100%;
 	background: #000000
 }
+#controls {
+	position: absolute;
+	display: block;
+	bottom: 50%;
+	left: 52vmin;
+	z-index: 20; }
+button {
+	font-size: 20px;
+	background: #555;
+	color: #fff;
+	padding: 0px 10px; }
