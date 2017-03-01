@@ -36,8 +36,17 @@ function init(){
 
 // make the map and all that, after the points are chosen
 function make_the_map(){
-	// create the map
-	$m = new ol.Map({target:'map',controls:[],layers:[$basemap]});
+	// add a listener for completed loading of the baselayer
+	$baseTileSource.on('tileloadend',function(){
+		var date = new Date();
+		$load_time = date.getTime();
+	});
+	
+	var baselayer = new ol.layer.VectorTile({
+		source: $baseTileSource,
+		style: stylefunction
+	});
+	$m = new ol.Map({target:'map',controls:[],layers:[baselayer]});
 
 	// define features for starting and ending points
 	// these will bee added to a source and then a layer
@@ -112,6 +121,7 @@ function storeResults(coords){
 	var r = new XMLHttpRequest();
 	var URL = $storePHPURL+'?';
 	URL += 'od_id='+$od_id;
+	URL += '&load_time='+$load_time;
 	URL += '&start_time='+$start_time;
 	URL += '&end_time='+$end_time;
 	URL += '&zoom_level='+$m.getView().getZoom();

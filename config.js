@@ -16,16 +16,15 @@ var $greymin = 80
 
 var $grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
 
-// define basemap layer, (currently vector tiles being served from mapbox)
-var $basemap = new ol.layer.VectorTile({
-	source: new ol.source.VectorTile({
-		url: $tileURL,
-		tileGrid: ol.tilegrid.createXYZ({maxZoom: 20}),
-		format: new ol.format.MVT(),
-		tilePixelRatio: 16
-	}),
-	style: stylefunction
-});
+// define basemap layer SOURCE, 
+// (currently vector tiles being served from mapbox)
+var $baseTileSource = new ol.source.VectorTile({
+	url: $tileURL,
+	tileGrid: ol.tilegrid.createXYZ({maxZoom: 20}),
+	format: new ol.format.MVT(),
+	tilePixelRatio: 16
+})
+
 
 // style function for rendering linear features based on attributes
 function stylefunction(feature){
