@@ -7,17 +7,15 @@ var $m; // (currently empty) map object
 // A -> B lat,lon points
 var $A = [];
 var $B = [];
-// (currently) empty OD source
+// source for OD points layer
 var $ODsource = new ol.source.Vector();
+// source for interactive drawing layer
+var $scratchSource = new ol.source.Vector();
 
 var $load_time;	// moment the map has been revealed
 var $start_time;	// moment finger touches the screen
 var $end_time;		// moment finger leaves the screen
 var $od_id;			// ID of OD pair presented
-
-// keeping track of map loading progress
-var $tiles_requested = 0;
-var $tiles_loaded = 0;
 
 
 // START button has been pressed. Do all the stuff!
@@ -35,19 +33,9 @@ function start(){
 		style: stylefunction
 	});
 	$m = new ol.Map({target:'map',controls:[],layers:[baselayer]});
-	// add a listener for completed loading of the baselayer
-	$baseTileSource.on('tileloadend',function(){
-		$tiles_loaded+=1;
-		console.log($tiles_loaded + 'loa');
-	});
-	$baseTileSource.on('tileloadstart',function(){
-		$tiles_requested+=1;
-		console.log($tiles_requested + 'req');
-	});
 	// place for storing scribbles
-	var scratch = new ol.source.Vector();
 	var scratchLayer = new ol.layer.Vector({
-		source: scratch 
+		source: $scratchSource
 	});	
 	$m.addLayer(scratchLayer);
 	// add A->B features to a layer so they can be included in the map
@@ -56,7 +44,7 @@ function start(){
 
 	// create the DRAW interaction object
 	var draw = new ol.interaction.Draw({
-		source: scratch,
+		source: $scratchSource,
 		type: 'LineString',
 		freehand: true
 	});
@@ -88,6 +76,10 @@ function drawend(event){
 	mapMatch(coordinates);
 	// send results to the DB
 	storeResults(coordinates);
+	// erase the blackboard
+	$scratchSource.clear();
+	// set a new grey value at random for the next rendering
+	$grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
 }
 
 // request a new random OD pair from the server
@@ -137,6 +129,8 @@ function hideMap(){
 function showMap(){
 	var map = document.getElementById('map');
 	map.setAttribute('style','');
+	var date = new Date();
+	$load_time = date.getTime();
 }
 
 // transform a string of lon-lat coords to WKT LINESTRING
@@ -205,18 +199,30 @@ function mapMatch(coords){
 	r.onreadystatechange = function(){
 		if(r.readyState == 4){ // finished
 			if(r.status == 200){ // got good response
-				console.log('match returned');
 				var data = JSON.parse(r.responseText);
-				var matchGeom = data.matchings[0].geometry;
-				// TODO render match geometry
-//				var source = ol.source.GeoJSON({
-//					feature: matchGeom,
-//					projection: 'EPSG:4326'
-//				});
-//				var layer = ol.layer.Vector({
-//					source: source
-//				});
-//				$m.addLayer(layer);
+				var match1 = data.matchings[0];
+				// render match geometry
+				console.log(match1);
+				var format = new ol.format.GeoJSON();
+				var feature = format.readFeatures(
+					match1.geometry,
+					{
+						dataProjection: 'EPSG:4326',
+						featureProjection: 'EPSG:3857'
+					}
+				)[0];
+				feature.setStyle(
+					new ol.style.Style({
+						stroke: new ol.style.Stroke({
+							width:5,
+							color:'#ff0000'
+						})
+					})
+				);
+				$scratchSource.addFeature(feature);
+				// prepare a new map after the match has 
+				// been shown for a few seconds
+				setTimeout(newOD,3000);
 			}
 		}
 	}
