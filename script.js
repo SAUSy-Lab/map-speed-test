@@ -10,11 +10,14 @@ var $B = [];
 // (currently) empty OD source
 var $ODsource = new ol.source.Vector();
 
-
 var $load_time;	// moment the map has been revealed
 var $start_time;	// moment finger touches the screen
 var $end_time;		// moment finger leaves the screen
 var $od_id;			// ID of OD pair presented
+
+// keeping track of map loading progress
+var $tiles_requested = 0;
+var $tiles_loaded = 0;
 
 
 // START button has been pressed. Do all the stuff!
@@ -44,8 +47,12 @@ function start(){
 	$m = new ol.Map({target:'map',controls:[],layers:[baselayer]});
 	// add a listener for completed loading of the baselayer
 	$baseTileSource.on('tileloadend',function(){
-		var date = new Date();
-		$load_time = date.getTime();
+		$tiles_loaded+=1;
+		console.log($tiles_loaded + 'loa');
+	});
+	$baseTileSource.on('tileloadstart',function(){
+		$tiles_requested+=1;
+		console.log($tiles_requested + 'req');
 	});
 	// place for storing scribbles
 	var scratch = new ol.source.Vector();
@@ -94,6 +101,7 @@ function start(){
 // store it in the global variables
 // load it into the map when ready
 function newOD(){
+	hideMap();
 	// request points
 	var r = new XMLHttpRequest();
 	r.open('get',$randomPointsURL,true);
@@ -117,11 +125,25 @@ function newOD(){
 				// fit the screen to the new ODs
 				var view = new ol.View();
 				view.fit( $ODsource.getExtent(), {size: $m.getSize()} );
+				$tiles_requested = $tiles_loaded = 0;
 				$m.setView(view);
+				// give the map 4 seconds to load and render, then show it
+				setTimeout(showMap,4000);
 			}
 		}
 	}
 	r.send();
+}
+
+// hide the map from view
+function hideMap(){
+	var map = document.getElementById('map');
+	map.setAttribute('style','visibility:hidden');
+}
+// return the map to view
+function showMap(){
+	var map = document.getElementById('map');
+	map.setAttribute('style','');
 }
 
 // transform a string of lon-lat coords to WKT LINESTRING
