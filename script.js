@@ -22,17 +22,7 @@ var $tiles_loaded = 0;
 
 // START button has been pressed. Do all the stuff!
 function start(){
-	var de = document.documentElement;
-	// make the page full screen (lots of campatibility BS)
-	if(de.requestFullscreen) {
-		de.requestFullscreen();
-	} else if(de.mozRequestFullScreen) {
-		de.mozRequestFullScreen();
-	} else if(de.webkitRequestFullscreen) {
-		de.webkitRequestFullscreen();
-	} else if(de.msRequestFullscreen) {
-		de.msRequestFullscreen();
-	}
+	makeFullScreen();
 	// hide the button
 	var button = document.getElementById('startbutton');
 	button.parentNode.removeChild(button);
@@ -73,28 +63,31 @@ function start(){
 	// add the interaction to the map
 	$m.addInteraction(draw);
 	// listen for the start of a draw motion and note the time
-	draw.once('drawstart',function(event){
+	draw.on('drawstart',function(event){
 		var date = new Date();
 		$start_time = date.getTime();
 	});
 	// listen for the end of a draw motion
-	draw.once('drawend',function(event){
-		// note the time
-		var date = new Date();
-		$end_time = date.getTime();
-		// get the geometry
-		var feature = event.feature;
-		var geometry = feature.getGeometry();
-		var coordinates = geometry.getCoordinates();
-		// transform to lat-lons
-		coordinates = coords2latlon(coordinates);
-		// send to the map-matching server
-		mapMatch(coordinates);
-		// send results to the DB
-		storeResults(coordinates);
-	});
+	draw.on('drawend',drawend);
 	// call for a new OD initialization
 	newOD();
+}
+
+// function called at the end of a drawing event
+function drawend(event){
+	// note the time
+	var date = new Date();
+	$end_time = date.getTime();
+	// get the geometry
+	var feature = event.feature;
+	var geometry = feature.getGeometry();
+	var coordinates = geometry.getCoordinates();
+	// transform to lat-lons
+	coordinates = coords2latlon(coordinates);
+	// send to the map-matching server
+	mapMatch(coordinates);
+	// send results to the DB
+	storeResults(coordinates);
 }
 
 // request a new random OD pair from the server
@@ -228,4 +221,18 @@ function mapMatch(coords){
 		}
 	}
 	r.send();
+}
+
+function makeFullScreen(){
+	var de = document.documentElement;
+	// make the page full screen (lots of campatibility BS)
+	if(de.requestFullscreen) {
+		de.requestFullscreen();
+	} else if(de.mozRequestFullScreen) {
+		de.mozRequestFullScreen();
+	} else if(de.webkitRequestFullscreen) {
+		de.webkitRequestFullscreen();
+	} else if(de.msRequestFullscreen) {
+		de.msRequestFullscreen();
+	}
 }
