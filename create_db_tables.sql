@@ -10,6 +10,7 @@ CREATE TABLE map_speed_od (
 CREATE TABLE map_speed_results (
 	id serial PRIMARY KEY, 
 	od_id integer, -- id of od table
+	session_id numeric,
 	trace geometry(LINESTRING,4326),
 	load_time numeric, -- javascript time in milliseconds, time the map was revealed
 	start_time numeric, -- javascript time in milliseconds, trace start

@@ -16,6 +16,7 @@ var $load_time;	// moment the map has been revealed
 var $start_time;	// moment finger touches the screen
 var $end_time;		// moment finger leaves the screen
 var $od_id;			// ID of OD pair presented
+var $session_id = Math.random();	// ID of the user's session
 
 
 // START button has been pressed. Do all the stuff!
@@ -149,6 +150,7 @@ function storeResults(coords){
 	var r = new XMLHttpRequest();
 	var URL = $storePHPURL+'?';
 	URL += 'od_id='+$od_id;
+	URL += '&session_id='+$session_id;
 	URL += '&load_time='+$load_time;
 	URL += '&start_time='+$start_time;
 	URL += '&end_time='+$end_time;
