@@ -155,18 +155,23 @@ function coordsToWKT(coordinates){
 // send data to be stored on the server database
 function storeResults(coords){
 	var r = new XMLHttpRequest();
-	var URL = $storePHPURL+'?';
-	URL += 'od_id='+$od_id;
-	URL += '&session_id='+$session_id;
-	URL += '&load_time='+$load_time;
-	URL += '&start_time='+$start_time;
-	URL += '&end_time='+$end_time;
-	URL += '&zoom_level='+$m.getView().getZoom();
-	URL += '&trace='+coordsToWKT(coords);
-	URL += '&map_extent='+extentWKT();
-	URL += '&min_grey='+$grey;
-	r.open('get',URL,true);
-	r.send();
+	// format parameters
+	var params = 'od_id='+$od_id;
+	params += '&session_id='+$session_id;
+	params += '&load_time='+$load_time;
+	params += '&start_time='+$start_time;
+	params += '&end_time='+$end_time;
+	params += '&zoom_level='+$m.getView().getZoom();
+	params += '&trace='+coordsToWKT(coords);
+	params += '&map_extent='+extentWKT();
+	params += '&min_grey='+$grey;
+	r.open('POST',$storePHPURL,true);
+	// set headers
+	r.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	r.setRequestHeader("Content-length", params.length);
+	r.setRequestHeader("Connection", "close");
+	// and send
+	r.send(params);
 }
 
 // get current extent as a WKT LINESTRING in 4326

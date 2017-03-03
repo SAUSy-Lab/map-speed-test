@@ -8,15 +8,15 @@ $connection = pg_connect($DBconnectionString);
 
 # get the GET variables. We know what to expect, so 
 # there is little checking needed
-$od_id		=	pg_escape_literal($_GET['od_id']);
-$session_id	=	pg_escape_literal($_GET['session_id']);
-$load_time	=	pg_escape_literal($_GET['load_time']);
-$start_time =	pg_escape_literal($_GET['start_time']);
-$end_time	=	pg_escape_literal($_GET['end_time']);
-$zoom_level	=	pg_escape_literal($_GET['zoom_level']);
-$trace		=	pg_escape_string($_GET['trace']);
-$map_extent	=	pg_escape_string($_GET['map_extent']);
-$min_grey	=	pg_escape_string($_GET['min_grey']);
+$od_id		=	pg_escape_literal($_POST['od_id']);
+$session_id	=	pg_escape_literal($_POST['session_id']);
+$load_time	=	pg_escape_literal($_POST['load_time']);
+$start_time =	pg_escape_literal($_POST['start_time']);
+$end_time	=	pg_escape_literal($_POST['end_time']);
+$zoom_level	=	pg_escape_literal($_POST['zoom_level']);
+$trace		=	pg_escape_string($_POST['trace']);
+$map_extent	=	pg_escape_string($_POST['map_extent']);
+$min_grey	=	pg_escape_string($_POST['min_grey']);
 
 # select a random row
 $query = "
