@@ -67,8 +67,10 @@ function drawend(event){
 	// note the time
 	var date = new Date();
 	$end_time = date.getTime();
-	// get the geometry
+	// get the feature
 	var feature = event.feature;
+	// TODO
+	console.log(feature);
 	var geometry = feature.getGeometry();
 	var coordinates = geometry.getCoordinates();
 	// transform to lat-lons
@@ -168,8 +170,8 @@ function storeResults(coords){
 	r.open('POST',$storePHPURL,true);
 	// set headers
 	r.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	r.setRequestHeader("Content-length", params.length);
-	r.setRequestHeader("Connection", "close");
+	//r.setRequestHeader("Content-length", params.length);
+	//r.setRequestHeader("Connection", "close");
 	// and send
 	r.send(params);
 }
@@ -197,12 +199,13 @@ function coords2latlon(coords){
 
 // send the coordinates to be matched on the cloud
 function mapMatch(coords){
+	var radius = fingerRadius();
 	// make list into pairs of coordinate strings
 	var c = [];
 	var radii = [];
 	for(i=0;i<coords.length;i++){
 		c.push(coords[i][0]+','+coords[i][1]);
-		radii.push(30);
+		radii.push(radius);
 	}
 	var r = new XMLHttpRequest();
 	URL = $OSRMserver + '/match/v1/transit/';
@@ -240,6 +243,13 @@ function mapMatch(coords){
 		}
 	}
 	r.send();
+}
+
+// returns the rough radius of a fingertip
+// in meters based on the current map scale
+function fingerRadius(){
+	// TODO finish this function
+	return 50;
 }
 
 function makeFullScreen(){

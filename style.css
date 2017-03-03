@@ -14,7 +14,7 @@ html, body, #map {
 	left: 52vmin;
 	z-index: 20; }
 button {
-	font-size: 20px;
+	font-size: 50px;
 	background: #555;
 	color: #fff;
-	padding: 0px 10px; }
+	padding: 30px 30px; }
