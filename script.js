@@ -18,6 +18,9 @@ var $end_time;		// moment finger leaves the screen
 var $od_id;			// ID of OD pair presented
 var $session_id = Math.random();	// ID of the user's session
 
+// array of OD IDs that have already been returned
+var $completedODs = [-1];
+
 
 // START button has been pressed. Do all the stuff!
 function start(){
@@ -25,10 +28,8 @@ function start(){
 	// hide the button
 	var button = document.getElementById('startbutton');
 	button.parentNode.removeChild(button);
-
 	// DO THE MAP
 	// make a map with all the stuff except the stuff that changes per OD
-
 	var baselayer = new ol.layer.VectorTile({
 		source: $baseTileSource,
 		style: stylefunction
@@ -42,7 +43,6 @@ function start(){
 	// add A->B features to a layer so they can be included in the map
 	var markers = new ol.layer.Vector({ source:$ODsource });
 	$m.addLayer(markers);
-
 	// create the DRAW interaction object
 	var draw = new ol.interaction.Draw({
 		source: $scratchSource,
@@ -90,15 +90,22 @@ function newOD(){
 	hideMap();
 	// request points
 	var r = new XMLHttpRequest();
-	r.open('get',$randomPointsURL,true);
+	var URL = $randomPointsURL+'?completedODs='+$completedODs;
+	r.open('get',URL,true);
 	r.onreadystatechange = function(){
 		if(r.readyState == 4){ // finished
 			if(r.status == 200){ // got good response
 				var data = JSON.parse(r.responseText);
+				// make sure we do acually have a result
+				if(data.id == null){
+					alert("You're done! Thanks for your time!");
+					return;
+				}
 				// store globally
 				$A = [data.lon1,data.lat1];
 				$B = [data.lon2,data.lat2];
 				$od_id = data.id;
+				$completedODs.push($od_id);
 				// define features
 				var A = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($A))});
 				var B = new ol.Feature({geometry: new ol.geom.Point(ol.proj.fromLonLat($B))});
@@ -204,7 +211,6 @@ function mapMatch(coords){
 				var data = JSON.parse(r.responseText);
 				var match1 = data.matchings[0];
 				// render match geometry
-				console.log(match1);
 				var format = new ol.format.GeoJSON();
 				var feature = format.readFeatures(
 					match1.geometry,

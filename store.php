@@ -47,11 +47,6 @@ $query = "
 ";
 $result = pg_query($connection,$query);
 
-
-
-# format it to JSON and send
-#echo json_encode($record,JSON_NUMERIC_CHECK);
-
 # close the connection
 pg_close($connection);
 
