@@ -10,9 +10,12 @@ var $storePHPURL = 'http://206.167.182.17/~ubuntu/store.php'
 
 var $randomPointsURL = 'http://206.167.182.17/~ubuntu/random_points.php';
 
+// line simplification parameter
+var $simplificationDistance = 6; // mercator 'meters'
+
 // grey for deadends, from 0 black to 255 white
 // int please, and > 16
-var $greymin = 80
+var $greymin = 80;
 
 var $grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
 

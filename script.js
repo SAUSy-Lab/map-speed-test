@@ -67,18 +67,24 @@ function drawend(event){
 	// note the time
 	var date = new Date();
 	$end_time = date.getTime();
-	// get the feature
-	var feature = event.feature;
-	// TODO
-	console.log(feature);
-	var geometry = feature.getGeometry();
-	var coordinates = geometry.getCoordinates();
-	// transform to lat-lons
-	coordinates = coords2latlon(coordinates);
-	// send to the map-matching server
-	mapMatch(coordinates);
+	// get a copy of the feature geometry in two projections
+	var geom3857 = event.feature.getGeometry().clone();
+	var geom4326 = event.feature.getGeometry().clone();
+	geom4326.transform('EPSG:3857','EPSG:4326');
+	// if the line is too complex, simplify it
+	if(geom4326.getCoordinates().length < 30){ // is simple
+		mapMatch(geom4326.getCoordinates());
+	}else{ // is complex
+		// simplify in locally undistorted mercator projection
+		var simple = geom3857.simplify( $simplificationDistance );
+		// back to latlon and mapmatch
+		simple.transform('EPSG:3857','EPSG:4326');
+		console.log(geom4326.getCoordinates().length);
+		console.log(simple.getCoordinates().length);
+		mapMatch(simple.getCoordinates());
+	}
 	// send results to the DB
-	storeResults(coordinates);
+	storeResults( geom4326.getCoordinates() );
 	// erase the blackboard
 	$scratchSource.clear();
 	// set a new grey value at random for the next rendering
