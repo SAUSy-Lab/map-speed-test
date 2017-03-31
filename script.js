@@ -30,11 +30,20 @@ function start(){
 	button.parentNode.removeChild(button);
 	// DO THE MAP
 	// make a map with all the stuff except the stuff that changes per OD
-	var baselayer = new ol.layer.VectorTile({
-		source: $baseTileSource,
-		style: stylefunction
+	var variableLayer = new ol.layer.VectorTile({
+		source: $variableTileSource,
+		style: $variableStyleFunction
 	});
-	$m = new ol.Map({target:'map',controls:[],layers:[baselayer]});
+	// make a map with all the stuff except the stuff that changes per OD
+	var baseLayer = new ol.layer.VectorTile({
+		source: $baseTileSource,
+		style: $baseStyleFunction
+	});
+	$m = new ol.Map({
+		target:'map',
+		controls:[],
+		layers:[baseLayer,variableLayer]
+	});
 	// place for storing scribbles
 	var scratchLayer = new ol.layer.Vector({
 		source: $scratchSource
