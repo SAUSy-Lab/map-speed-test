@@ -5,7 +5,7 @@ body {
 html, body, #map {
 	height: 100%;
 	width: 100%;
-	background: #000000
+	background: #d9d6ce;
 }
 #controls {
 	position: absolute;

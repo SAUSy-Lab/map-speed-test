@@ -73,11 +73,13 @@ function $baseStyleFunction(feature){
 	// get properties fo the feature
 	var p = feature.getProperties();
 	if( p.natural == 'wood' ){
-		var color = '#061702';
+		var color = [86,142,82,0.5];
 	}else if( p.natural == 'water' ){
-		var color = '#050f42';
+		var color = [119,115,145,1];
 	}else if( p.building == 'yes' ){
-		var color = '#30041c';
+		var color = [186,151,151,1];
+	}else if( p.landuse == 'retail' ){
+		var color = [167,88,88,0.4];
 	}else{
 		return null;
 	}
