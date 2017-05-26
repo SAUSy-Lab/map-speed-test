@@ -16,7 +16,7 @@ $query = "
 		ST_Y(ST_StartPoint(vector)) AS lat1,
 		ST_X(ST_EndPoint(vector)) AS lon2,
 		ST_Y(ST_EndPoint(vector)) AS lat2
-	FROM od 
+	FROM map_speed_od 
 	WHERE id NOT IN ($completedODs)
 	ORDER BY random() 
 	LIMIT 1;";
