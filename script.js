@@ -89,8 +89,6 @@ function drawend(event){
 		var simple = geom3857.simplify( $simplificationDistance );
 		// back to latlon and mapmatch
 		simple.transform('EPSG:3857','EPSG:4326');
-		console.log(geom4326.getCoordinates().length);
-		console.log(simple.getCoordinates().length);
 		mapMatch(simple.getCoordinates());
 	}
 	// send results to the DB
@@ -136,6 +134,8 @@ function newOD(){
 				// fit the screen to the new ODs
 				var view = new ol.View();
 				view.fit( $ODsource.getExtent(), {size: $m.getSize()} );
+				// zoom out a little to give a little extra space
+				vew.setZoom( view.getZoom()-0.5 );
 				$tiles_requested = $tiles_loaded = 0;
 				$m.setView(view);
 				// give the map 4 seconds to load and render, then show it
