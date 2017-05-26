@@ -18,5 +18,5 @@ CREATE TABLE map_speed_results (
 	end_time numeric, -- javascript time in milliseconds, trace end
 	zoom_level real,
 	map_extent geometry(POLYLINE,4326), -- line from screen minX,minY->maxX,maxY
-	min_grey real -- variable of interest, grey of deadends, varied randomly 
+	min_opacity real -- variable of interest, opacity of deadends, varied randomly 
 );

@@ -10,11 +10,11 @@ var $randomPointsURL = 'http://206.167.182.17/~ubuntu/random_points.php';
 // line simplification parameters
 var $simplificationDistance = 5; // meters
 
-// grey for deadends, from 0 black to 255 white
-// int please, and > 16
-var $greymin = 70;
-
-var $grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
+// minimum opacity for deadends, from 0 to 1
+var $min_opacity = 0.4;
+// set the opacity for this iteration randomly
+var $opacity = $min_opacity + (Math.random()*(1-$min_opacity));
+console.log('min opacity to use:'+$opacity)
 
 // define basemap layer SOURCE,
 // tile layer source, formatted for ol.source.XYZ 
@@ -42,20 +42,19 @@ function $variableStyleFunction(feature){
 		return null;
 	}
 	// default white
-	var color = '#ffffff';
+	var color = [255,255,255,1];
 	// vary color by property
 	if( p.car_comp == -1 ){ // is deadend
-		var g = $grey.toString(16);
-		color = '#'+g+g+g;
+		color = [255,255,255,$opacity];
 	}
 	if(p.car_direct != undefined){ // has directness value
 		if( p.car_direct < 1 ){ // is not direct
 			// define how much range we have
-			var range = 255 - $grey;
-			// vary value by value
-			var greyval = Math.floor(p.car_direct * range) + $grey;
-			g = greyval.toString(16);
-			color = '#'+g+g+g;
+//			var range = 255 - $grey;
+//			// vary value by value
+//			var greyval = Math.floor(p.car_direct * range) + $grey;
+//			g = greyval.toString(16);
+			color = [255,255,255,$opacity];
 		}
 	}
 	// create style object to return

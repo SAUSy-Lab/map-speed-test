@@ -95,8 +95,9 @@ function drawend(event){
 	storeResults( geom4326.getCoordinates() );
 	// erase the blackboard
 	$scratchSource.clear();
-	// set a new grey value at random for the next rendering
-	$grey = Math.ceil( Math.random() * (255-$greymin) + $greymin );
+	// set a new opacity value at random for the next rendering
+	$opacity = $min_opacity + (Math.random()*(1-$min_opacity));
+	console.log('min opacity to use:'+$opacity)
 }
 
 // request a new random OD pair from the server
@@ -135,7 +136,7 @@ function newOD(){
 				var view = new ol.View();
 				view.fit( $ODsource.getExtent(), {size: $m.getSize()} );
 				// zoom out a little to give a little extra space
-				vew.setZoom( view.getZoom()-0.5 );
+				view.setZoom( view.getZoom()-0.5 );
 				$tiles_requested = $tiles_loaded = 0;
 				$m.setView(view);
 				// give the map 4 seconds to load and render, then show it
@@ -182,7 +183,7 @@ function storeResults(coords){
 	params += '&zoom_level='+$m.getView().getZoom();
 	params += '&trace='+coordsToWKT(coords);
 	params += '&map_extent='+extentWKT();
-	params += '&min_grey='+$grey;
+	params += '&min_opacity='+$opacity;
 	r.open('POST',$storePHPURL,true);
 	// set headers
 	r.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

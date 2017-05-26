@@ -16,7 +16,7 @@ $end_time	=	pg_escape_literal($_POST['end_time']);
 $zoom_level	=	pg_escape_literal($_POST['zoom_level']);
 $trace		=	pg_escape_string($_POST['trace']);
 $map_extent	=	pg_escape_string($_POST['map_extent']);
-$min_grey	=	pg_escape_string($_POST['min_grey']);
+$min_opacity	=	pg_escape_string($_POST['min_opacity']);
 
 # select a random row
 $query = "
@@ -30,7 +30,7 @@ $query = "
 			start_time, 
 			end_time,
 			zoom_level,
-			min_grey
+			min_opacity
 		) 
 		VALUES 
 		( 
@@ -42,7 +42,7 @@ $query = "
 			$start_time, 
 			$end_time,
 			$zoom_level,
-			$min_grey
+			$min_opacity
 		);
 ";
 $result = pg_query($connection,$query);
