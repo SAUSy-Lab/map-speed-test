@@ -19,6 +19,7 @@ var $od_id;			// ID of OD pair presented
 var $session_id = Math.random();	// ID of the user's session
 
 // array of OD IDs that have already been returned
+// initialized at non-existent value
 var $completedODs = [-1];
 
 
