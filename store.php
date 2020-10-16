@@ -1,6 +1,4 @@
 <?php
-#quickly return json containing randomly selected OD points from server-side DB
-
 require 'config.php';
 
 # connect to DB
